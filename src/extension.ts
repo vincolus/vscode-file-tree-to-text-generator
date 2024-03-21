@@ -81,26 +81,17 @@ export function activate(ctx: ExtensionContext) {
       },
     );
 
-    // Der korrekte Weg, um den Pfad zu einer Ressource im Webview zu erhalten
     const pathToHtml = Uri.file(path.join(ctx.extensionPath, 'dist', 'webview.html'));
     const webViewUri = vscodeWebViewOutputTab.webview.asWebviewUri(pathToHtml);
 
-    // Lese die HTML-Datei und ersetze den Platzhaltertext
     const finalHtml = fs
       .readFileSync(path.join(ctx.extensionPath, 'dist', 'webview.html'), 'utf8')
       .replace('###TEXTTOREPLACE###', tree);
 
-    // Setze den HTML-Inhalt des Webviews
     vscodeWebViewOutputTab.webview.html = finalHtml.replace(/src=["']([^"']+)["']/g, (match, p1) => {
       const assetPath = Uri.file(path.join(ctx.extensionPath, 'dist', p1));
       return `src="${vscodeWebViewOutputTab.webview.asWebviewUri(assetPath)}"`;
     });
-
-    // previous:
-    // const uri = Uri.parse(ctx.asAbsolutePath(path.join('dist', 'webview.html')));
-    // const pathUri = uri.with({ scheme: 'vscode-resource' });
-    // const finalHtml = fs.readFileSync(pathUri.fsPath, 'utf8').replace('###TEXTTOREPLACE###', tree);
-    // vscodeWebViewOutputTab.webview.html = finalHtml;
 
     ctx.subscriptions.push(disposable);
   });
